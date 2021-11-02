@@ -1504,6 +1504,13 @@ const converters = {
             return result;
         },
     },
+    checkin: {
+        cluster: 'genPollCtrl',
+        type: ['commandCheckIn'],
+        convert: (model, msg, publish, options, meta) => {
+            return {};
+        },
+    },
     checkin_presence: {
         cluster: 'genPollCtrl',
         type: ['commandCheckIn'],

@@ -15,7 +15,7 @@ module.exports = [
         model: '014G2461',
         vendor: 'Danfoss',
         description: 'Ally thermostat',
-        fromZigbee: [fz.battery, fz.thermostat, fz.hvac_user_interface, fz.danfoss_thermostat],
+        fromZigbee: [fz.battery, fz.thermostat, fz.hvac_user_interface, fz.danfoss_thermostat, fz.checkin],
         toZigbee: [tz.danfoss_thermostat_occupied_heating_setpoint, tz.thermostat_local_temperature, tz.danfoss_mounted_mode_active,
             tz.danfoss_mounted_mode_control, tz.danfoss_thermostat_vertical_orientation, tz.danfoss_algorithm_scale_factor,
             tz.danfoss_heat_available, tz.danfoss_heat_required, tz.danfoss_day_of_week, tz.danfoss_trigger_time,
@@ -69,7 +69,7 @@ module.exports = [
         configure: async (device, coordinatorEndpoint, logger) => {
             const endpoint = device.getEndpoint(1);
             const options = {manufacturerCode: 0x1246};
-            await reporting.bind(endpoint, coordinatorEndpoint, ['genPowerCfg', 'hvacThermostat']);
+            await reporting.bind(endpoint, coordinatorEndpoint, ['genPowerCfg', 'genPollCtrl', 'hvacThermostat']);
 
             // standard ZCL attributes
             await reporting.batteryPercentageRemaining(endpoint);
