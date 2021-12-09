@@ -448,6 +448,8 @@ module.exports = [
                 .withPiHeatingDemand()],
         meta: {battery: {voltageToPercentage: '3V_2500'}},
         configure: async (device, coordinatorEndpoint, logger) => {
+            device.defaultSendWhenActive = true;
+            device.save();
             const endpoint = device.getEndpoint(11);
             // Insert default values for client requested attributes
             endpoint.saveClusterAttributeKeyValue('hvacThermostat', {minHeatSetpointLimit: 7*100});

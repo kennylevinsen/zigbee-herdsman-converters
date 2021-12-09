@@ -6062,13 +6062,25 @@ const converters = {
         key: ['calibrate_valve'],
         convertSet: async (entity, key, value, meta) => {
             await entity.command('hvacThermostat', 'wiserSmartCalibrateValve', {},
-                {srcEndpoint: 11, disableDefaultResponse: true, sendWhenActive: true});
+                {srcEndpoint: 11, disableDefaultResponse: true});
             return {state: {'calibrate_valve': value}};
         },
     },
     wiser_sed_zone_mode: {
         key: ['zone_mode'],
         convertSet: async (entity, key, value, meta) => {
+            const lookup = {'manual': 1, 'schedule': 2, 'energy_saver': 3, 'holiday': 6};
+            const zonemodeNum = lookup[value];
+            const setpoint = meta.state.occupied_heating_setpoint ?
+                (Math.round((meta.state.occupied_heating_setpoint * 2).toFixed(1)) / 2).toFixed(1) * 100 :
+                undefined;
+            const payload = {
+                operatingmode: 0,
+                zonemode: zonemodeNum,
+                setpoint: setpoint,
+                reserved: 0xff,
+            };
+            await entity.command('hvacThermostat', 'wiserSmartSetSetpoint', payload, {srcEndpoint: 11});
             return {state: {'zone_mode': value}};
         },
     },
@@ -6077,14 +6089,23 @@ const converters = {
         convertSet: async (entity, key, value, meta) => {
             const occupiedHeatingSetpoint = (Math.round((value * 2).toFixed(1)) / 2).toFixed(1) * 100;
             entity.saveClusterAttributeKeyValue('hvacThermostat', {occupiedHeatingSetpoint});
+            const lookup = {'manual': 1, 'schedule': 2, 'energy_saver': 3, 'holiday': 6};
+            const zonemodeNum = lookup[meta.state.zone_mode];
+            const payload = {
+                operatingmode: 0,
+                zonemode: zonemodeNum,
+                setpoint: occupiedHeatingSetpoint,
+                reserved: 0xff,
+            };
+            await entity.command('hvacThermostat', 'wiserSmartSetSetpoint', payload, {srcEndpoint: 11});
             return {state: {'occupied_heating_setpoint': value}};
         },
     },
     wiser_sed_thermostat_local_temperature_calibration: {
         key: ['local_temperature_calibration'],
-        convertSet: (entity, key, value, meta) => {
-            entity.write('hvacThermostat', {localTemperatureCalibration: Math.round(value * 10)},
-                {srcEndpoint: 11, disableDefaultResponse: true, sendWhenActive: true});
+        convertSet: async (entity, key, value, meta) => {
+            await entity.write('hvacThermostat', {localTemperatureCalibration: Math.round(value * 10)},
+                {srcEndpoint: 11, disableDefaultResponse: true});
             return {state: {local_temperature_calibration: value}};
         },
     },
@@ -6093,7 +6114,7 @@ const converters = {
         convertSet: async (entity, key, value, meta) => {
             const keypadLockout = utils.getKey(constants.keypadLockoutMode, value, value, Number);
             await entity.write('hvacUserInterfaceCfg', {keypadLockout},
-                {srcEndpoint: 11, disableDefaultResponse: true, sendWhenActive: true});
+                {srcEndpoint: 11, disableDefaultResponse: true});
             return {state: {keypad_lockout: value}};
         },
     },
